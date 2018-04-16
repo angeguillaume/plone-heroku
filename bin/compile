@@ -2,6 +2,21 @@
 
 set -eo pipefail
 
+read_env(){
+	VAR_NAME="${1}"
+	DEFAULT_VALUE="${2}"
+
+	echo "-----> Read ${1} from env vars, or use default"
+	if [ -f "$ENV_DIR/${VAR_NAME}" ]; then
+	    export "${VAR_NAME}=$(cat "${ENV_DIR}/${VAR_NAME}")"
+	    echo "Using custom ${VAR_NAME}: ${!VAR_NAME}"
+	else
+	    export "${VAR_NAME}=${DEFAULT_VALUE}"
+	    echo "Use default for ${VAR_NAME}: ${!VAR_NAME}"
+	fi
+}
+
+
 # Heroku has opinions on indentation, let's respect them
 indent() {
   sed -u 's/^/       /'
@@ -72,7 +87,14 @@ else
     echo "Use default bootstrap.py: ${BOOTSTRAP_PY_URL}" | indent
 fi
 
+read_env "ADMIN_NAME" "admin" | indent
+read_env "ADMIN_PASSWD" "admin" | indent
+
 cd $BUILD_DIR
+
+echo "-----> Replace Vars."
+sed -i s";user = admin:admin;${ADMIN_NAME}:${ADMIN_PASSWD};" "${BUILDOUT_CFG}"
+
 echo "-----> Bootstrap buildout"
 curl -o bootstrap.py -L "${BOOTSTRAP_PY_URL}"
 python bootstrap.py -c $BUILDOUT_CFG

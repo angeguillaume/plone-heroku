@@ -4,7 +4,9 @@
   "repository": "https://github.com/psychomantys/plone-heroku",
   "logo": "http://www.coactivate.org/projects/plone-marketing/plone-logo-guidelines/plone-vertical-logo.png",
   "env": {
-    "BUILDPACK_URL": "https://github.com/plone/heroku-buildpack-plone#5.0.8"
+    "BUILDPACK_URL": "https://github.com/plone/heroku-buildpack-plone#5.0.8",
+    "ADMIN_NAME": "admin",
+    "ADMIN_PASSWD": "admin"
   },
   "addons": [
     "heroku-postgresql:hobby-dev"
