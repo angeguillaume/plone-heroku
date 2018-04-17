@@ -114,7 +114,7 @@ echo "-----> Bootstrap buildout"
 curl -o bootstrap.py -0L "${BOOTSTRAP_PY_URL}"
 python bootstrap.py -c "${BUILDOUT_CFG}"
 echo "-----> Run bin/buildout -c ${BUILDOUT_CFG} ${BUILDOUT_VERBOSITY}"
-if [ -z "${BUILDOUT_VERBOSITY}" ]
+if [ -z "${BUILDOUT_VERBOSITY}" ] ; then
 	bin/buildout -c "${BUILDOUT_CFG}"
 else
 	bin/buildout -c "${BUILDOUT_CFG}" "${BUILDOUT_VERBOSITY}"
