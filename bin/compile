@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+export_env_dir() {
+	env_dir=$1
+	whitelist_regex=${2:-''}
+	blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
+
+	if [ -d "${env_dir}" ]; then
+		for e in $(ls "${env_dir}"); do
+			echo "${e}" | grep -E "${whitelist_regex}" | grep -qvE "${blacklist_regex}" &&
+				export "${e}=$( cat "${env_dir}/${e}" )"
+			:
+		done
+	fi
+}
+
+read_env(){
+	VAR_NAME="${1}"
+	DEFAULT_VALUE="${2}"
+
+	echo "-----> Read ${1} from env vars, or use default"
+	if [ -f "${ENV_DIR}/${VAR_NAME}" ]; then
+	    export "${VAR_NAME}=$( cat "${ENV_DIR}/${VAR_NAME}" )"
+	    hecho "Using custom ${VAR_NAME}: ${!VAR_NAME}"
+	else
+	    export "${VAR_NAME}=${DEFAULT_VALUE}"
+	    hecho "Use default for ${VAR_NAME}: ${!VAR_NAME}"
+	fi
+}
+
+hecho() {
+	echo "$@" | indent
+}
+
+# Heroku has opinions on indentation, let's respect them
+indent() {
+  sed -u 's/^/       /'
+}
+
+
+## MAIN
+
+BUILD_DIR=$1  # -> temp dir that contains whatever is in the git repo
+CACHE_DIR=$2  # -> use this dir for caching between compiles
+ENV_DIR=$3  # -> environment variables are stored as files inside here
+
+INSTALL_DIR="${BUILD_DIR}/.heroku/vendor/buildout"  # -> after buildout is
+# finished, copy results to this dir so they get compressed into a Heroku slug
+
+read_env UI_URL "https://launchpad.net/plone/5.0/5.0.4/+download/Plone-5.0.4-UnifiedInstaller.tgz"
+read_env UI_TARBALL "Plone-5.0.4-UnifiedInstaller.tgz"
+read_env UI_DIR "Plone-5.0.4-UnifiedInstaller"
+
+# make sure dirs exist
+mkdir -p "${CACHE_DIR}"
+mkdir -p "${INSTALL_DIR}"
+
+echo "-----> Use build cache"
+if [ -d "${CACHE_DIR}/bin" ]; then
+	hecho "Get buildout results from the previous build"
+	cp -r "${CACHE_DIR}/bin"  "${BUILD_DIR}/"
+	cp -r "${CACHE_DIR}/eggs"  "${BUILD_DIR}/"
+	cp -r "${CACHE_DIR}/parts"  "${BUILD_DIR}/"
+	cp -r "${CACHE_DIR}/var"  "${BUILD_DIR}/"
+else
+	hecho "Cache empty, let's fix that"
+	hecho "Prime with Unified Installer cache"
+	curl -OL "${UI_URL}"
+	hecho "Unpacking Installer"
+	tar xfz "${UI_TARBALL}"
+	cd "${UI_DIR}"
+	hecho "Unpacking Installer cache"
+	tar xfj packages/buildout-cache.tar.bz2
+	hecho "Moving cache eggs to build directory"
+	cp -r buildout-cache/eggs "${BUILD_DIR}/"
+	hecho "Clean up Installer files"
+	cd ..
+	rm -rf "${UI_TARBALL}" "${UI_DIR}"
+
+fi
+
+read_env "BUILDOUT_CFG" "heroku.cfg"
+
+read_env "BUILDOUT_VERBOSITY" ""
+
+read_env "BOOTSTRAP_PY_URL" "https://bootstrap.pypa.io/bootstrap-buildout.py"
+
+read_env "CONFIGURE_ZOPECONF_URL" "https://raw.githubusercontent.com/plone/heroku-buildpack-plone/master/configure_zopeconf.py"
+
+cd "${BUILD_DIR}"
+
+echo "-----> Replace Vars."
+sed -i s";user = admin:admin;${ADMIN_NAME}:${ADMIN_PASSWD};" "${BUILDOUT_CFG}"
+
+echo "-----> Bootstrap buildout"
+curl -o bootstrap.py -0L "${BOOTSTRAP_PY_URL}"
+python bootstrap.py -c $BUILDOUT_CFG
+echo "-----> Run bin/buildout -c ${BUILDOUT_CFG} ${BUILDOUT_VERBOSITY}"
+bin/buildout -c $BUILDOUT_CFG $BUILDOUT_VERBOSITY
+
+echo "-----> Fix paths in zope.conf"
+sed "s|${BUILD_DIR}|/app|" parts/instance/etc/zope.conf > zope.conf.new
+mv zope.conf.new parts/instance/etc/zope.conf
+
+echo "-----> Copy results to cache"
+cp -r "${BUILD_DIR}/bin" "${CACHE_DIR}"
+cp -r "${BUILD_DIR}/eggs" "${CACHE_DIR}"
+cp -r "${BUILD_DIR}/parts" "${CACHE_DIR}"
+cp -r "${BUILD_DIR}/var" "${CACHE_DIR}"
+
+echo "-----> Copy results to slug"
+cp -r "${BUILD_DIR}/bin" "${INSTALL_DIR}"
+cp -r "${BUILD_DIR}/eggs" "${INSTALL_DIR}"
+cp -r "${BUILD_DIR}/parts" "${INSTALL_DIR}"
+cp -r "${BUILD_DIR}/var" "${INSTALL_DIR}"
+
+echo "-----> Copy configure_zopeconf.py script to slug"
+curl -OL "${CONFIGURE_ZOPECONF_URL}" -o "${BUILD_DIR}/configure_zopeconf.py"
+cp -r "${BUILD_DIR}/configure_zopeconf.py" "${INSTALL_DIR}"
+
+hecho "Done"
+
