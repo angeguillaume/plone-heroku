@@ -16,7 +16,6 @@
 	"UI_TARBALL": "Plone-5.0.4-UnifiedInstaller.tgz",
 	"UI_DIR": "Plone-5.0.4-UnifiedInstaller",
 	"BUILDOUT_CFG": "heroku.cfg",
-	"BUILDOUT_VERBOSITY": "-v",
 	"BOOTSTRAP_PY_URL": "https://bootstrap.pypa.io/bootstrap-buildout.py",
 	"CONFIGURE_ZOPECONF_URL": "https://raw.githubusercontent.com/plone/heroku-buildpack-plone/master/configure_zopeconf.py"
   },
