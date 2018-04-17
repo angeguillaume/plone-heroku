@@ -5,7 +5,7 @@
   "logo": "http://www.coactivate.org/projects/plone-marketing/plone-logo-guidelines/plone-vertical-logo.png",
   "buildpacks": [
     {
-      "url": "https://github.com/psychomantys/plone-heroku/tree/buildpack"
+      "url": "https://github.com/psychomantys/plone-heroku#buildpack"
     }
   ],
   "addons": [
