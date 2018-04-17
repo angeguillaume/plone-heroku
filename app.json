@@ -3,7 +3,11 @@
   "description": "A ready-to-use Plone instance on heroku",
   "repository": "https://github.com/psychomantys/plone-heroku",
   "logo": "http://www.coactivate.org/projects/plone-marketing/plone-logo-guidelines/plone-vertical-logo.png",
-  "image": "heroku/python",
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
   "addons": [
     "heroku-postgresql:hobby-dev"
   ],
