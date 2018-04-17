@@ -91,7 +91,7 @@ read_env "CONFIGURE_ZOPECONF_URL" "https://raw.githubusercontent.com/plone/herok
 cd "${BUILD_DIR}"
 
 echo "-----> Replace Vars."
-sed -i s";user = admin:admin;${ADMIN_NAME}:${ADMIN_PASSWD};" "${BUILDOUT_CFG}"
+#sed -i s";user = admin:admin;${ADMIN_NAME}:${ADMIN_PASSWD};" "${BUILDOUT_CFG}"
 
 echo "-----> Bootstrap buildout"
 curl -o bootstrap.py -0L "${BOOTSTRAP_PY_URL}"
