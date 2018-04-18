@@ -15,13 +15,18 @@ password: admin
 Buildpack
 =====================================
 
+Make your configuration and run:
+
 ```
+git add heroku.cfg buildout.cfg
 heroku create --buildpack https://github.com/psychomantys/plone-heroku.git
 heroku git:remote -a "${APP_NAME}"
 git push heroku master
 heroku open
 heroku logs -t
 ```
+
+See `heroku.cfg` and `buildout.cfg` for examples.
 
 Configure
 =====================================
