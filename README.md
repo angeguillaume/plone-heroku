@@ -23,3 +23,26 @@ heroku open
 heroku logs -t
 ```
 
+Configure
+=====================================
+
+You can configure the buildpack or deploy button with this envs:
+
+```
+UI_URL="https://launchpad.net/plone/5.0/5.0.4/+download/Plone-5.0.4-UnifiedInstaller.tgz"
+UI_TARBALL="Plone-5.0.4-UnifiedInstaller.tgz"
+UI_DIR="Plone-5.0.4-UnifiedInstaller"
+BUILDOUT_CFG="heroku.cfg"
+BUILDOUT_VERBOSITY="-v"
+BOOTSTRAP_PY_URL="https://bootstrap.pypa.io/bootstrap-buildout.py"
+CONFIGURE_ZOPECONF_URL="https://raw.githubusercontent.com/psychomantys/plone-heroku/master/configure_zopeconf.py"
+ADMIN_NAME="admin"
+ADMIN_PASSWD="admin"
+```
+
+Using the buildpack, you can set this like:
+
+```
+heroku config:add BUILDOUT_VERBOSITY=-vvvv
+```
+
