@@ -17,7 +17,7 @@ Buildpack
 
 Make your configuration and run:
 
-```
+```bash
 git add heroku.cfg buildout.cfg
 heroku create --buildpack https://github.com/psychomantys/plone-heroku.git
 heroku git:remote -a "${APP_NAME}"
@@ -33,7 +33,7 @@ Configure
 
 You can configure the buildpack or deploy button with this envs:
 
-```
+```bash
 UI_URL="https://launchpad.net/plone/5.0/5.0.4/+download/Plone-5.0.4-UnifiedInstaller.tgz"
 UI_TARBALL="Plone-5.0.4-UnifiedInstaller.tgz"
 UI_DIR="Plone-5.0.4-UnifiedInstaller"
@@ -47,7 +47,7 @@ ADMIN_PASSWD="admin"
 
 Using the buildpack, you can set this like:
 
-```
+```bash
 heroku config:add BUILDOUT_VERBOSITY=-vvvv
 ```
 
